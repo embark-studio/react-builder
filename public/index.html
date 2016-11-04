@@ -1,0 +1,35 @@
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.2/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.2/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
+    <script src="main.js"></script>
+    <script>
+        $(function(){
+            Store.set("color", "#aaaaaa")
+            Store.set("here", 1)
+            Controller.on("here.increase", function(a){
+                Store.set("here", Store.get("here") + 1)
+            })
+            Controller.on("here.decrease", function(a){
+                Store.set("here", Store.get("here") - 1)
+            })
+            Controller.on("here.dark", function(a){
+                Store.set("color", "#000")
+            })
+        })
+        $.get("/main.json").then(function(dataReturn){
+            data = dataReturn;
+
+            ReactDOM.render(
+                    React.createElement(BuilderElement, data),
+                    document.getElementById('body')
+            );
+        })
+    </script>
+    <script src="main.js"></script>
+</head>
+<body>
+    <div id="body"></div>
+</body>
+</html>
