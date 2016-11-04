@@ -140,3 +140,13 @@ BuilderElement = React.createClass({
     }
 
 });
+
+if(module) {
+    module.exports = {
+        Builder: {
+            ReactElement: ReactElement,
+            Controller: Controller,
+            Store: Store
+        }
+    }
+}

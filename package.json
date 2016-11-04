@@ -2,12 +2,13 @@
   "name": "builder",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
-  "dependencies": {
+  "files": "react-builder.js",
+  "main": "react-builder.js",
+  "dependencies": {}
+  "devDependencies": {
     "express": "^4.14.0",
     "serve-static": "^1.11.1"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
