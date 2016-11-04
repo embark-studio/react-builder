@@ -1,3 +1,1 @@
-Builder = require("./public/main.js")
-
-module.exports = Builder
+module.exports = require("./public/main.js")
