@@ -53,11 +53,6 @@ BuilderElement = React.createClass({
         this.setState(data)
     },
     getInitialState: function(){
-        c = this;
-        BuilderElement.middlewares.forEach(function(middleWare){
-            middleWare(c)
-        })
-
         var c = this;
         var initialData = {}
 
@@ -145,11 +140,7 @@ BuilderElement = React.createClass({
     }
 
 });
-BuilderElement.middlewares = []
-BuilderElement.middleWare = function(middleware){
-    this.middlewares = this.middlewares || [];
-    this.middlewares.push(middleware);
-}
+
 if(module) {
     module.exports = {
         Builder: {
