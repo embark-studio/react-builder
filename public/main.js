@@ -23,33 +23,65 @@ Controller = {
     }
 }
 
-Store = {
-    "set": function(key, value){
-        this.data[key] = value;
-        return Controller.trigger(key+".set")
-    },
-    "get": function(key){
-        if(this.data[key] && typeof this.data[key] == "object") {
-            if(Array.isArray(this.data[key])){
-                return this.data[key].map(function(data){
-                    return JSON.parse(JSON.stringify(data));
-                })
-            }else {
-                return JSON.parse(JSON.stringify(this.data[key]));
-            }
-        }else{
-            return this.data[key];
-        }
-    },
-    "data":{}
+Store = function(key){
+    var me = {};
+    me.key = key;
+    me.store = function(key){
+        return Store([m.key, key].join("."));
+    }
+    me.set = function(value){
+        Store.set(me.key, value)
+    }
+    me.get = function(){
+        Store.get(me.key)
+    }
+    me.increase = function(){
+        Store.increase(me.key)
+    }
+    me.decrease = function(){
+        Store.decrease(me.key)
+    }
+
+    return me;
 }
+Store.set = function(key, value){
+    this.data[key] = value;
+    return Controller.trigger(key+".set")
+}
+
+Store.get = function(key){
+    if(this.data[key] && typeof this.data[key] == "object") {
+        if(Array.isArray(this.data[key])){
+            return this.data[key].map(function(data){
+                return JSON.parse(JSON.stringify(data));
+            })
+        }else {
+            return JSON.parse(JSON.stringify(this.data[key]));
+        }
+    }else{
+        return this.data[key];
+    }
+}
+
+Store.increase = function(key){
+    var value = (Store.get(key) || 0) + 1;
+    Store.set(key, value)
+}
+Store.decrease = function(key){
+    var value = (Store.get(key) || 0) - 1;
+    Store.set(key, value)
+}
+
+Store.data = {}
+
+
 
 BuilderElement = React.createClass({
     displayName: "BuilderElement",
-    update: function(key){
+    update: function(key, value){
 
         var data = {};
-        data[key] = Store.get(key)
+        data[key] = Store.get(value)
         this.setState(data)
     },
     getInitialState: function(){
@@ -57,9 +89,18 @@ BuilderElement = React.createClass({
         var initialData = {}
 
         if(this.props.stores) {
-            this.props.stores.forEach(function (key) {
-                initialData[key] = Store.get(key)
-                Controller.on(key + ".set", c.update.bind(c, key))
+            this.props.stores.forEach(function (item) {
+                if(typeof item == "string"){
+                    var key = item;
+                    var value = item;
+                }else{
+                    var key = Object.keys(item)[0];
+                    var value = item[key];
+                }
+
+                initialData[value] = Store.get(key);
+
+                Controller.on(key + ".set", c.update.bind(c, key, value))
             })
         }
 
@@ -69,7 +110,7 @@ BuilderElement = React.createClass({
         var c = this;
         if(this.props.stores) {
             this.props.stores.forEach(function (key) {
-                Controller.off(key, c.update)
+                Controller.off(key, c.update.bind(c, "development"))
             })
         }
     },
@@ -130,18 +171,20 @@ BuilderElement = React.createClass({
                 }
             }
         })
+
         props.children = typeof props.children == "string" ? c.parse(props.children) : props.children;
 
         return React.createElement(
-            elementName,
-            props,
-            this.childElement(this.props.children)
-        );
+                elementName,
+                props,
+                this.childElement(this.props.children)
+        )
     }
 
 });
 
-if(module) {
+
+if(typeof module != "undefined") {
     module.exports = {
         Builder: {
             ReactElement: BuilderElement,

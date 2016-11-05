@@ -23,12 +23,33 @@ Controller = {
     }
 }
 
-Store = {
-    "set": function(key, value){
+Store = function(key){
+    var me = {};
+    me.key = key;
+    me.store = function(key){
+        return Store([m.key, key].join("."));
+    }
+    me.set = function(value){
+        Store.set(me.key, value)
+    }
+    me.get = function(){
+        Store.get(me.key)
+    }
+    me.increase = function(){
+        Store.increase(me.key)
+    }
+    me.decrease = function(){
+        Store.decrease(me.key)
+    }
+
+    return me;
+}
+Store.set = function(key, value){
         this.data[key] = value;
         return Controller.trigger(key+".set")
-    },
-    "get": function(key){
+    }
+
+Store.get = function(key){
         if(this.data[key] && typeof this.data[key] == "object") {
             if(Array.isArray(this.data[key])){
                 return this.data[key].map(function(data){
@@ -40,16 +61,27 @@ Store = {
         }else{
             return this.data[key];
         }
-    },
-    "data":{}
+    }
+
+Store.increase = function(key){
+    var value = (Store.get(key) || 0) + 1;
+    Store.set(key, value)
 }
+Store.decrease = function(key){
+    var value = (Store.get(key) || 0) - 1;
+    Store.set(key, value)
+}
+
+Store.data = {}
+
+
 
 BuilderElement = React.createClass({
     displayName: "BuilderElement",
-    update: function(key){
+    update: function(key, value){
 
         var data = {};
-        data[key] = Store.get(key)
+        data[key] = Store.get(value)
         this.setState(data)
     },
     getInitialState: function(){
@@ -57,21 +89,32 @@ BuilderElement = React.createClass({
         var initialData = {}
 
         if(this.props.stores) {
-            this.props.stores.forEach(function (key) {
-                initialData[key] = Store.get(key)
-                Controller.on(key + ".set", c.update.bind(c, key))
+            this.props.stores.forEach(function (item) {
+                if(typeof item == "string"){
+                    var key = item;
+                    var value = item;
+                }else{
+                    var key = Object.keys(item)[0];
+                    var value = item[key];
+                }
+
+                initialData[value] = Store.get(key);
+
+                Controller.on(key + ".set", c.update.bind(c, key, value))
             })
         }
 
+        Controller.on("nightowl.development.set", c.update.bind(c, "development", "nightowl.development"))
         return initialData;
     },
     componentWillUnmount: function(){
         var c = this;
         if(this.props.stores) {
             this.props.stores.forEach(function (key) {
-                Controller.off(key, c.update)
+                Controller.off(key, c.update.bind(c, "development"))
             })
         }
+        Controller.off("nightowl.development.set", c.update.bind(c, "development", "nightowl.development"))
     },
     childElement: function(data){
         var c = this;
@@ -104,7 +147,6 @@ BuilderElement = React.createClass({
         return eval(formatted)
     },
     render: function render() {
-
         var c = this;
         var elementName = this.props.elementName;
         var props = JSON.parse(JSON.stringify(this.props));
@@ -114,29 +156,33 @@ BuilderElement = React.createClass({
         delete props.stores;
 
 
-        Object.keys(props).forEach(function(prop){
-            if(prop.slice(0, 2) == "on"){
+        Object.keys(props).forEach(function (prop) {
+            if (prop.slice(0, 2) == "on") {
                 var trigger = props[prop];
-                props[prop] = function(e){
+                props[prop] = function (e) {
                     props.e = e;
                     Controller.trigger(trigger, props)
                 }
-            }else{
-                if(typeof props[prop] == "string") {
+            } else {
+                if (typeof props[prop] == "string") {
                     props[prop] = c.parse(props[prop]);
-                }else if(prop == "style"){
-                    Object.keys(props.style).forEach(function(styleKey){
+                } else if (prop == "style") {
+                    Object.keys(props.style).forEach(function (styleKey) {
                         props.style[styleKey] = c.parse(props.style[styleKey]);
                     })
                 }
             }
         })
         props.children = typeof props.children == "string" ? c.parse(props.children) : props.children;
-        selectElement = function(e){
-            Controller.trigger("element.select", props)
+
+        selectElement = function () {
+            Controller.trigger("nightowl.selected", props)
         }
-        React.createElement("div", {},
-            React.createElement("div", {className: "nightowl-sdk-item", onClick: selectElement}, elementName),
+
+        var display = this.state.development ? "block" : "none";
+
+        return React.createElement("div", {style: {display: "inline-block"}},
+            React.createElement("div", {className: "nightowl-sdk-item", style: {display: display, WebkitUserSelect: "none", cursor: "pointer"}, onClick: selectElement}, elementName),
             React.createElement(
                 elementName,
                 props,
@@ -147,7 +193,14 @@ BuilderElement = React.createClass({
 
 });
 
-if(module) {
+document.onkeydown = function(evt) {
+    evt = evt || window.event;
+    if (evt.keyCode == "16") {
+        Store.set("nightowl.development", !Store.get("nightowl.development"))
+    }
+};
+
+if(typeof module != "undefined") {
     module.exports = {
         Builder: {
             ReactElement: BuilderElement,

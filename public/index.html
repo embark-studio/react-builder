@@ -3,19 +3,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.2/react.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.2/react-dom.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
-    <script src="main.js"></script>
+    <script src="https://rawgit.com/opus-1/store-api-wrapper/master/src/store.js"></script>
+    <script src="./sdk.js"></script>
     <script>
         $(function(){
-            Store.set("color", "#aaaaaa")
-            Store.set("here", 1)
+
+            Store("color").set("#aaaaaa")
+            Store("here").set(1)
             Controller.on("here.increase", function(a){
-                Store.set("here", Store.get("here") + 1)
+                Store("here").increase()
             })
             Controller.on("here.decrease", function(a){
-                Store.set("here", Store.get("here") - 1)
+                Store("here").decrease()
             })
             Controller.on("here.dark", function(a){
-                Store.set("color", "#000")
+                Store("color").set("#000")
+            })
+            Controller.on("element.select", function(element){
+                console.log(element)
             })
         })
         $.get("/main.json").then(function(dataReturn){
@@ -27,7 +32,7 @@
             );
         })
     </script>
-    <script src="main.js"></script>
+
 </head>
 <body>
     <div id="body"></div>
