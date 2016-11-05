@@ -136,7 +136,7 @@ BuilderElement = React.createClass({
             Controller.trigger("element.select", props)
         }
         React.createElement("div", {},
-            React.createElement("div", {className: "item", onClick: selectElement}, elementName),
+            React.createElement("div", {className: "nightowl-sdk-item", onClick: selectElement}, elementName),
             React.createElement(
                 elementName,
                 props,
