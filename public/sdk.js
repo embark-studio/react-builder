@@ -180,8 +180,9 @@ BuilderElement = React.createClass({
         }
 
         var display = this.state.development ? "block" : "none";
+        var active = this.state.development ? "active" : "";
 
-        return React.createElement("div", {className: "nightowl-sdk-container", style: {display: "inline-block"}},
+        return React.createElement("div", {className: "nightowl-sdk-container " + active, style: {display: "inline-block"}},
             React.createElement("div", {className: "nightowl-sdk-item", style: {display: display, WebkitUserSelect: "none", cursor: "pointer"}, onClick: selectElement}, elementName),
             React.createElement(
                 elementName,
