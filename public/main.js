@@ -186,10 +186,8 @@ BuilderElement = React.createClass({
 
 if(typeof module != "undefined") {
     module.exports = {
-        Builder: {
-            ReactElement: BuilderElement,
-            Controller: Controller,
-            Store: Store
-        }
+        ReactElement: BuilderElement,
+        Controller: Controller,
+        Store: Store
     }
 }
