@@ -33,7 +33,7 @@ Store = function(key){
         Store.set(me.key, value)
     }
     me.get = function(){
-        Store.get(me.key)
+        return Store.get(me.key)
     }
     me.increase = function(){
         Store.increase(me.key)
